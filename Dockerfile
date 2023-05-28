@@ -1,6 +1,6 @@
 FROM python:3.11.3-slim-buster
 
-ENV PYTHONINBUFFERED=1
+ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update \
     && apt-get -y upgrade \
