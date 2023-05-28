@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics, mixins
 from rest_framework.exceptions import ValidationError
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
@@ -23,7 +23,10 @@ class ListCreatePlaces(generics.ListCreateAPIView):
                 pnt = Point(float(longitude), float(latitude), srid=4326)
             except ValueError:
                 raise ValidationError(detail="Invalid Params")
-            query = query.annotate(distance=Distance("geom", pnt)).order_by("distance")[:1]
+            query = (
+                query.annotate(distance=Distance("geom", pnt))
+                .order_by("distance")[:1]
+            )
 
         return query
 
@@ -43,3 +46,21 @@ class ListCreatePlaces(generics.ListCreateAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+
+class UpdateDeletePlace(
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+    generics.GenericAPIView,
+):
+    serializer_class = PlaceSerializer
+    queryset = Place.objects.all()
+
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
