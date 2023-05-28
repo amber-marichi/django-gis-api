@@ -31,21 +31,32 @@ class ListCreatePlaces(generics.ListCreateAPIView):
         return query
 
     @extend_schema(
+        description=(
+            "List all existing places by default. "
+            "Get closest point by providing latitude and longitude "
+            "as query parameters."
+        ),
         parameters=[
             OpenApiParameter(
                 name="lat",
                 type=OpenApiTypes.STR,
-                description="Enter latitude of coordinates",
+                description="Enter latitude of point",
             ),
             OpenApiParameter(
                 name="lng",
                 type=OpenApiTypes.STR,
-                description="Enter longitude of coordinates",
+                description="Enter longitude of point",
             ),
         ]
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        description="Create new place with name, description and coordinates."
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
 
 class UpdateDeletePlace(
@@ -56,11 +67,20 @@ class UpdateDeletePlace(
     serializer_class = PlaceSerializer
     queryset = Place.objects.all()
 
+    @extend_schema(
+        description="Update existing place by ID"
+    )
     def put(self, request, *args, **kwargs):
         return self.update(request, *args, **kwargs)
 
+    @extend_schema(
+        description="Partially update existing place by ID"
+    )
     def patch(self, request, *args, **kwargs):
         return self.partial_update(request, *args, **kwargs)
 
+    @extend_schema(
+        description="Delete existing place by ID"
+    )
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)

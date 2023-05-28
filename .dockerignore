@@ -6,3 +6,4 @@ Dockerfile
 *.yml
 *.md
 *.db
+*ignore
