@@ -10,6 +10,17 @@ from places.models import Place
 from places.serializers import PlaceSerializer
 
 
+def get_point_from_params(longitude, latitude):
+    try:
+        longitude_val = float(longitude)
+        latitude_val = float(latitude)
+    except (ValueError, TypeError):
+        raise ValidationError(detail="Invalid Params")
+    if not -180 <= longitude_val <= 180 or not -90 <= latitude_val <= 90:
+        raise ValidationError(detail="Invalid Params")
+    return Point(longitude_val, latitude_val, srid=4326)
+
+
 class ListCreatePlaces(generics.ListCreateAPIView):
     serializer_class = PlaceSerializer
 
@@ -18,13 +29,10 @@ class ListCreatePlaces(generics.ListCreateAPIView):
         longitude = self.request.query_params.get("lng")
         latitude = self.request.query_params.get("lat")
 
-        if latitude and longitude:
-            try:
-                pnt = Point(float(longitude), float(latitude), srid=4326)
-            except ValueError:
-                raise ValidationError(detail="Invalid Params")
+        if latitude or longitude:
+            point = get_point_from_params(longitude, latitude)
             query = (
-                query.annotate(distance=Distance("geom", pnt))
+                query.annotate(distance=Distance("geom", point))
                 .order_by("distance")[:1]
             )
 
